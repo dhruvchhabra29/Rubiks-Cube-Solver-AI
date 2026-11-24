@@ -46,6 +46,8 @@ Reproduce
     python3 train.py --dataset data/cube_dataset.npz --epochs 12 --out models/model_dataset.npz
     python3 benchmark.py --model models/model_dataset.npz --out benchmarks/with_dataset.json \
         --label "larger dataset" --dataset "120k generated scrambles, lengths 1-6"
+    python3 make_report.py
+    python3 verify.py          # live demo / verification for a teacher
 
 Scope / honest limits
 ---------------------
