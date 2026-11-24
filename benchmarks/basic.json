@@ -1,0 +1,57 @@
+{
+  "move_accuracy": {
+    "1": 1.0,
+    "2": 0.89,
+    "3": 0.7175,
+    "4": 0.545,
+    "5": 0.425,
+    "6": 0.305,
+    "7": 0.2325,
+    "8": 0.195
+  },
+  "solving": {
+    "1": {
+      "success_rate": 1.0,
+      "avg_moves": 1.0,
+      "trials": 40
+    },
+    "2": {
+      "success_rate": 1.0,
+      "avg_moves": 2.0,
+      "trials": 40
+    },
+    "3": {
+      "success_rate": 0.8,
+      "avg_moves": 10.28,
+      "trials": 40
+    },
+    "4": {
+      "success_rate": 0.625,
+      "avg_moves": 17.38,
+      "trials": 40
+    },
+    "5": {
+      "success_rate": 0.3,
+      "avg_moves": 29.27,
+      "trials": 40
+    },
+    "6": {
+      "success_rate": 0.05,
+      "avg_moves": 38.33,
+      "trials": 40
+    }
+  },
+  "metadata": {
+    "label": "Baseline: 8k generated scrambles, 5 epochs",
+    "model": "models/model_basic.npz",
+    "architecture": [
+      324,
+      256,
+      256,
+      18
+    ],
+    "dataset": "8k generated scrambles, lengths 1-6",
+    "eval_seed": 424242,
+    "seconds": 0.1
+  }
+}
