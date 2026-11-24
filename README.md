@@ -56,6 +56,10 @@ Live solve
     python3 live.py --faces UUURRR...             # 54 stickers from a real cube
     python3 live.py --scramble "R U R' F2" --step # pause for Enter after each move
 
+For a physical cube, use the guided entry (asks face by face, validates counts):
+    python3 enter.py
+    python3 enter.py --step
+
 For --faces, type 54 letters in face order U,R,F,D,L,B, 9 each, row-major as
 seen looking straight at the face (U from above with B at the top of the view,
 D from below with F at the top, B from behind). Use letters, not colors.
