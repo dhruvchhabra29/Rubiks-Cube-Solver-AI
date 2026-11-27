@@ -1,12 +1,12 @@
 # Rubik's Cube Solver AI — Final Report
 
-All numbers below are read directly from `benchmarks/basic.json` and `benchmarks/with_dataset.json`, produced by `benchmark.py`.
+All numbers below are read directly from the JSON files in `benchmarks/` (`basic.json`, `with_dataset.json`, `strong.json`, `long.json`), produced by `benchmark.py` and `benchmark_strong.py`.
 
 ## Setup
 
 - Architecture (both runs): `[324, 256, 256, 18]` — same network, same hyperparameters. Only the training data changed.
-- Baseline (8k generated scrambles, lengths 1-6): Baseline: 8k generated scrambles, 5 epochs.
-- With dataset (120k generated scrambles, lengths 1-6): Larger dataset: 120k scrambles, 12 epochs.
+- Baseline (8k generated scrambles, lengths 1-6): 8k generated scrambles, 5 epochs.
+- With dataset (120k generated scrambles, lengths 1-6): 120k scrambles, 12 epochs.
 - Evaluation (identical for both): 400 fresh scrambles per length for move accuracy (lengths 1–8), 40 greedy solves per length for end-to-end solving (lengths 1–6), fixed seed 424242.
 
 ## 1. Move-prediction accuracy
@@ -68,12 +68,20 @@ All numbers below are read directly from `benchmarks/basic.json` and `benchmarks
 ## Reproduce
 
 ```bash
-python3 cube.py
-python3 train.py --samples 8000 --epochs 5 --out models/model_basic.npz
-python3 benchmark.py --model models/model_basic.npz --out benchmarks/basic.json --label baseline --dataset '8k generated scrambles, lengths 1-6'
-python3 make_dataset.py --samples 120000 --out data/cube_dataset.npz
-python3 train.py --dataset data/cube_dataset.npz --epochs 12 --out models/model_dataset.npz
-python3 benchmark.py --model models/model_dataset.npz --out benchmarks/with_dataset.json --label 'larger dataset' --dataset '120k generated scrambles, lengths 1-6'
-python3 make_report.py
+python3 -m venv .venv
+.venv/bin/python -m pip install -r requirements.txt
+.venv/bin/python cube.py
+.venv/bin/python train.py --samples 8000 --epochs 5 --out models/model_basic.npz
+.venv/bin/python benchmark.py --model models/model_basic.npz --out benchmarks/basic.json --label baseline --dataset '8k generated scrambles, lengths 1-6'
+.venv/bin/python make_dataset.py --samples 120000 --out data/cube_dataset.npz
+.venv/bin/python train.py --dataset data/cube_dataset.npz --epochs 12 --out models/model_dataset.npz
+.venv/bin/python benchmark.py --model models/model_dataset.npz --out benchmarks/with_dataset.json --label 'larger dataset' --dataset '120k generated scrambles, lengths 1-6'
+.venv/bin/python make_long_dataset.py
+.venv/bin/python train.py --dataset data/long_dataset.npz --hidden 512,256 --epochs 8 --batch 512 --out models/model_long.npz
+.venv/bin/python benchmark_strong.py --old models/model_dataset.npz --new models/model_long.npz --out benchmarks/long.json
+.venv/bin/python make_report.py
+.venv/bin/python verify.py
+.venv/bin/python tests/test_gui.py
+.venv/bin/python server.py   # GUI at http://127.0.0.1:8000
 ```
 
