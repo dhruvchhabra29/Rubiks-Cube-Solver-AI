@@ -36,8 +36,16 @@ Files
     make_dataset.py  writes a reproducible dataset .npz
     benchmark.py     fixed evaluation protocol -> JSON results
     solve.py         greedy solver / demo
+    live.py          terminal live solve of a physical cube
+    enter.py         guided 54-sticker entry for a physical cube
+    engine.py        fast ML path + Kociemba general-solver fallback
+    vision.py        OpenCV face detection + Lab color classification
+    server.py        Flask backend for the visual GUI
+    web/index.html   camera GUI with click-to-correct and step player
     models/          trained model weights
     benchmarks/      JSON benchmark results
+    data/            generated training datasets
+    requirements.txt pinned dependencies for the local venv
 
 Reproduce
 ---------
@@ -67,8 +75,27 @@ For --faces, type 54 letters in face order U,R,F,D,L,B, 9 each, row-major as
 seen looking straight at the face (U from above with B at the top of the view,
 D from below with F at the top, B from behind). Use letters, not colors.
 
+Visual GUI (camera -> detect -> solve -> follow steps)
+------------------------------------------------------
+    .venv/bin/python server.py
+    # open http://localhost:5000 and allow camera access
+
+Capture each of the six faces with the webcam; the GUI detects the 3x3 grid,
+shows it, and lets you click any square to fix a misread sticker. Press SOLVE
+and use prev/next/play to follow every move on your real cube. The engine tries
+the fast ML model first and falls back to Kociemba's solver for arbitrary cubes.
+Backend checks: `.venv/bin/python tests/test_gui.py`
+
+Stronger model
+--------------
+    .venv/bin/python make_long_dataset.py
+    .venv/bin/python train.py --dataset data/long_dataset.npz --hidden 512,256 \
+        --epochs 8 --batch 512 --out models/model_long.npz
+    .venv/bin/python benchmark_strong.py --old models/model_dataset.npz \
+        --new models/model_long.npz --out benchmarks/long.json
+
 Scope / honest limits
 ---------------------
-This learns short scrambles, not arbitrary random cubes. A full 40-move
-scramble needs either a hand-coded solver (Kociemba) or deep RL at large
-compute scale. See REPORT.md for measured results.
+The neural network alone is strongest on short scrambles; arbitrary cubes are
+solved by the Kociemba fallback in the app, not by the learned model. See
+REPORT.md for measured results and what was tried and rejected.

@@ -60,7 +60,7 @@ def _ml_model(model_path=None):
     global _MODEL
     if _MODEL is None:
         path = model_path or os.path.join(os.path.dirname(__file__),
-                                          "models", "model_dataset.npz")
+                                          "models", "model_long.npz")
         _MODEL = MLP.load(path)
     return _MODEL
 

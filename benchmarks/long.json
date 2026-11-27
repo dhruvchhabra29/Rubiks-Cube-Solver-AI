@@ -1,0 +1,172 @@
+{
+  "protocol": {
+    "trials_per_length": 20,
+    "seed": 777,
+    "max_steps": 40,
+    "lengths": "1..20"
+  },
+  "old_inverse_scramble": {
+    "1": {
+      "success_rate": 1.0,
+      "avg_moves": 1.0
+    },
+    "2": {
+      "success_rate": 1.0,
+      "avg_moves": 2.0
+    },
+    "3": {
+      "success_rate": 1.0,
+      "avg_moves": 2.95
+    },
+    "4": {
+      "success_rate": 1.0,
+      "avg_moves": 4.0
+    },
+    "5": {
+      "success_rate": 0.75,
+      "avg_moves": 13.8
+    },
+    "6": {
+      "success_rate": 0.35,
+      "avg_moves": 27.9
+    },
+    "7": {
+      "success_rate": 0.25,
+      "avg_moves": 31.7
+    },
+    "8": {
+      "success_rate": 0.2,
+      "avg_moves": 33.5
+    },
+    "9": {
+      "success_rate": 0.0,
+      "avg_moves": 40.0
+    },
+    "10": {
+      "success_rate": 0.0,
+      "avg_moves": 40.0
+    },
+    "11": {
+      "success_rate": 0.0,
+      "avg_moves": 40.0
+    },
+    "12": {
+      "success_rate": 0.0,
+      "avg_moves": 40.0
+    },
+    "13": {
+      "success_rate": 0.0,
+      "avg_moves": 40.0
+    },
+    "14": {
+      "success_rate": 0.0,
+      "avg_moves": 40.0
+    },
+    "15": {
+      "success_rate": 0.0,
+      "avg_moves": 40.0
+    },
+    "16": {
+      "success_rate": 0.0,
+      "avg_moves": 40.0
+    },
+    "17": {
+      "success_rate": 0.0,
+      "avg_moves": 40.0
+    },
+    "18": {
+      "success_rate": 0.0,
+      "avg_moves": 40.0
+    },
+    "19": {
+      "success_rate": 0.0,
+      "avg_moves": 40.0
+    },
+    "20": {
+      "success_rate": 0.0,
+      "avg_moves": 40.0
+    }
+  },
+  "new_model": {
+    "1": {
+      "success_rate": 1.0,
+      "avg_moves": 1.0
+    },
+    "2": {
+      "success_rate": 1.0,
+      "avg_moves": 2.0
+    },
+    "3": {
+      "success_rate": 1.0,
+      "avg_moves": 2.95
+    },
+    "4": {
+      "success_rate": 0.95,
+      "avg_moves": 5.85
+    },
+    "5": {
+      "success_rate": 0.75,
+      "avg_moves": 13.95
+    },
+    "6": {
+      "success_rate": 0.45,
+      "avg_moves": 24.55
+    },
+    "7": {
+      "success_rate": 0.5,
+      "avg_moves": 23.6
+    },
+    "8": {
+      "success_rate": 0.3,
+      "avg_moves": 30.15
+    },
+    "9": {
+      "success_rate": 0.1,
+      "avg_moves": 37.0
+    },
+    "10": {
+      "success_rate": 0.0,
+      "avg_moves": 40.0
+    },
+    "11": {
+      "success_rate": 0.0,
+      "avg_moves": 40.0
+    },
+    "12": {
+      "success_rate": 0.0,
+      "avg_moves": 40.0
+    },
+    "13": {
+      "success_rate": 0.0,
+      "avg_moves": 40.0
+    },
+    "14": {
+      "success_rate": 0.0,
+      "avg_moves": 40.0
+    },
+    "15": {
+      "success_rate": 0.0,
+      "avg_moves": 40.0
+    },
+    "16": {
+      "success_rate": 0.0,
+      "avg_moves": 40.0
+    },
+    "17": {
+      "success_rate": 0.0,
+      "avg_moves": 40.0
+    },
+    "18": {
+      "success_rate": 0.0,
+      "avg_moves": 40.0
+    },
+    "19": {
+      "success_rate": 0.0,
+      "avg_moves": 40.0
+    },
+    "20": {
+      "success_rate": 0.0,
+      "avg_moves": 40.0
+    }
+  }
+}
