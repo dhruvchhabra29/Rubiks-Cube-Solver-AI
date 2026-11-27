@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Rubik's Cube Solver — Visual GUI</title>
+<style>
+  :root { --bg:#0e1117; --panel:#181d26; --line:#2a3240; --text:#e7ecf3; --muted:#93a0b4; --accent:#5b9cff; }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--text); font:14px/1.45 -apple-system,Segoe UI,Roboto,sans-serif; }
+  header { padding:16px 22px; border-bottom:1px solid var(--line); display:flex; gap:18px; align-items:center; flex-wrap:wrap; }
+  h1 { margin:0; font-size:19px; letter-spacing:.3px; }
+  header .sub { color:var(--muted); font-size:12px; }
+  main { display:grid; grid-template-columns:repeat(auto-fit,minmax(330px,1fr)); gap:16px; padding:18px; max-width:1500px; margin:auto; }
+  .panel { background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:16px; }
+  .panel h2 { margin:0 0 12px; font-size:15px; }
+  button, select, input { font:inherit; color:var(--text); background:#222b38; border:1px solid #364154; border-radius:7px; padding:7px 11px; }
+  button { cursor:pointer; }
+  button:hover { border-color:var(--accent); }
+  button.primary { background:#2463c9; border-color:#3b78dd; font-weight:600; }
+  button.on { background:#2463c9; border-color:#3b78dd; }
+  video { width:100%; border-radius:9px; background:#000; aspect-ratio:4/3; object-fit:cover; }
+  .row { display:flex; gap:8px; align-items:center; flex-wrap:wrap; margin:10px 0; }
+  .face-tabs button { width:38px; }
+  .grid { display:grid; grid-template-columns:repeat(3,1fr); gap:4px; width:112px; }
+  .grid button { aspect-ratio:1; padding:0; font-weight:700; border-radius:4px; color:#111; text-shadow:0 1px 0 rgba(255,255,255,.35); }
+  .face-block { display:flex; align-items:center; gap:12px; margin:10px 0; }
+  .face-block > b { width:18px; }
+  .manual-wrap { display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:8px; }
+  .manual-wrap .face-block { flex-direction:column; align-items:flex-start; margin:0; }
+  .preview { width:190px; border-radius:8px; border:1px solid var(--line); }
+  .hint { color:var(--muted); font-size:12px; }
+  #stateString { font-family:ui-monospace,Menlo,monospace; font-size:11px; word-break:break-all; color:var(--muted); margin:8px 0; }
+  .badge { display:inline-block; padding:3px 9px; border-radius:20px; background:#1e3a5f; color:#9fc6ff; font-size:12px; }
+  .moves { font-family:ui-monospace,Menlo,monospace; word-break:break-all; margin:8px 0 14px; color:#cfe0ff; }
+  .faces-view { display:grid; grid-template-columns:repeat(3,auto); gap:14px; margin-top:14px; }
+  .faces-view .cell { width:30px; height:30px; border-radius:4px; display:inline-block; margin:1px; color:#111; font-weight:700; text-align:center; line-height:30px; }
+  .faces-view .face { text-align:center; }
+  .faces-view .face > b { display:block; margin-bottom:4px; color:var(--muted); }
+  .status { color:var(--muted); min-height:18px; font-size:12px; }
+  .err { color:#ff8a8a; }
+  input[type=range] { width:100%; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Rubik's Cube Solver</h1>
+  <span class="sub">Camera → detect 6 faces → solve → follow each move on a real cube</span>
+  <label>Engine
+    <select id="engine">
+      <option value="auto">Auto (fast ML, fallback solver)</option>
+      <option value="ml">ML only</option>
+      <option value="kociemba">General solver</option>
+    </select>
+  </label>
+</header>
+
+<main>
+  <section class="panel">
+    <h2>1. Capture your cube</h2>
+    <video id="video" autoplay playsinline></video>
+    <div class="row">
+      <button id="startCam">Start camera</button>
+      <div class="face-tabs" id="tabs"></div>
+      <button class="primary" id="captureBtn">Capture face</button>
+    </div>
+    <div id="detected"></div>
+    <p class="hint">Hold each face flat and fill the frame. Click any square below to correct a misread sticker.</p>
+  </section>
+
+  <section class="panel">
+    <h2>Or enter stickers manually</h2>
+    <div class="row">
+      <input id="scrambleText" placeholder="R U R' F2 (optional)" size="24">
+      <button id="loadScramble">Load scramble</button>
+    </div>
+    <div class="manual-wrap" id="manual"></div>
+    <p class="hint">Start from solved and edit squares, or load a scramble. Letter = color: U white, R red, F green, D yellow, L orange, B blue.</p>
+  </section>
+
+  <section class="panel">
+    <h2>2. Solve &amp; follow the steps</h2>
+    <div id="stateString"></div>
+    <button class="primary" id="solveBtn">SOLVE</button>
+    <div id="result"></div>
+    <div id="stepper"></div>
+    <div class="faces-view" id="cubeFaces"></div>
+    <div class="status" id="status"></div>
+  </section>
+</main>
+
+<script>
+const ORDER = ['U','R','F','D','L','B'];
+const COLORS = { U:'#f4f4ee', R:'#d62828', F:'#2a9d4b', D:'#f2c31d', L:'#f28c28', B:'#1d5fd0' };
+let faces = Object.fromEntries(ORDER.map(f => [f, Array(9).fill(f)]));
+let active = 'U', solution = null, step = 0, timer = null;
+const $ = id => document.getElementById(id);
+const status = msg => { $('status').textContent = msg; };
+
+function faceButton(letter, onClick, size=20) {
+  const b = document.createElement('button');
+  b.textContent = letter;
+  b.style.background = COLORS[letter];
+  b.style.width = b.style.height = size + 'px';
+  b.onclick = onClick;
+  return b;
+}
+function gridFor(face, onClick) {
+  const g = document.createElement('div');
+  g.className = 'grid';
+  faces[face].forEach((letter, i) => g.appendChild(faceButton(letter, () => onClick(face, i))));
+  return g;
+}
+function cycle(face, i, dir=1) {
+  const j = ORDER.indexOf(faces[face][i]);
+  faces[face][i] = ORDER[(j + dir + 6) % 6];
+  renderAll();
+}
+function renderAll() {
+  $('manual').innerHTML = '';
+  ORDER.forEach(f => {
+    const block = document.createElement('div');
+    block.className = 'face-block';
+    const label = document.createElement('b'); label.textContent = f;
+    block.appendChild(label);
+    block.appendChild(gridFor(f, (face, i) => cycle(face, i)));
+    $('manual').appendChild(block);
+  });
+  const str = ORDER.map(f => faces[f].join('')).join('');
+  $('stateString').textContent = 'State: ' + str;
+}
+function renderTabs() {
+  $('tabs').innerHTML = '';
+  ORDER.forEach(f => {
+    const b = document.createElement('button');
+    b.textContent = f;
+    b.className = f === active ? 'on' : '';
+    b.onclick = () => { active = f; renderTabs(); };
+    $('tabs').appendChild(b);
+  });
+}
+function renderDetected(data) {
+  const wrap = document.createElement('div');
+  wrap.className = 'face-block';
+  const img = document.createElement('img');
+  img.className = 'preview'; img.src = data.preview;
+  const g = document.createElement('div');
+  g.className = 'grid';
+  data.colors.split('').forEach((letter, i) => {
+    g.appendChild(faceButton(letter, () => {
+      faces[active][i] = letter;
+      cycle(active, i);
+    }, 26));
+  });
+  wrap.appendChild(img); wrap.appendChild(g);
+  const info = document.createElement('div');
+  info.innerHTML = `<span class="badge">${active} detected</span><br><span class="hint">${data.method}, ${data.low_confidence.length} low-confidence sticker(s)</span>`;
+  wrap.appendChild(info);
+  $('detected').innerHTML = '';
+  $('detected').appendChild(wrap);
+}
+function renderCubeFaces(stateStr) {
+  $('cubeFaces').innerHTML = '';
+  ORDER.forEach((f, fi) => {
+    const box = document.createElement('div'); box.className = 'face';
+    const label = document.createElement('b'); label.textContent = f;
+    box.appendChild(label);
+    for (let r = 0; r < 3; r++) for (let c = 0; c < 3; c++) {
+      const idx = fi * 9 + r * 3 + c;
+      const letter = stateStr[idx];
+      const cell = document.createElement('div');
+      cell.className = 'cell'; cell.textContent = letter;
+      cell.style.background = COLORS[letter];
+      box.appendChild(cell);
+      if (c === 2) box.appendChild(document.createElement('br'));
+    }
+    $('cubeFaces').appendChild(box);
+  });
+}
+function renderSolution() {
+  if (!solution) { $('result').innerHTML = ''; $('stepper').innerHTML = ''; return; }
+  const moves = solution.notation.split(' ').filter(Boolean);
+  $('result').innerHTML = `<div class="row"><span class="badge">${solution.engine}</span>
+    <span class="hint">${solution.moves.length} moves · ${solution.seconds}s</span></div>
+    <div class="moves">${solution.notation || '(already solved)'}</div>`;
+  const prev = document.createElement('button'); prev.textContent = '◀ prev';
+  const next = document.createElement('button'); next.textContent = 'next ▶';
+  const play = document.createElement('button'); play.textContent = '▶ play';
+  const range = document.createElement('input'); range.type = 'range';
+  range.min = 0; range.max = solution.states.length - 1; range.value = step;
+  const label = document.createElement('span'); label.className = 'hint';
+  const update = () => {
+    range.value = step;
+    label.textContent = ` step ${step}/${solution.states.length - 1}` +
+      (step > 0 ? `  (${moves[step - 1]})` : '  (start)');
+    renderCubeFaces(solution.states[step].map(i => ORDER[i]).join(''));
+  };
+  prev.onclick = () => { step = Math.max(0, step - 1); update(); };
+  next.onclick = () => { step = Math.min(solution.states.length - 1, step + 1); update(); };
+  range.oninput = () => { step = +range.value; update(); };
+  play.onclick = () => {
+    if (timer) { clearInterval(timer); timer = null; play.textContent = '▶ play'; return; }
+    play.textContent = '❚❚ pause';
+    timer = setInterval(() => {
+      if (step >= solution.states.length - 1) { clearInterval(timer); timer = null; play.textContent='▶ play'; return; }
+      step++; update();
+    }, 750);
+  };
+  const row = document.createElement('div'); row.className = 'row';
+  row.append(prev, next, play, label);
+  const wrap = document.createElement('div'); wrap.append(row, range);
+  $('stepper').innerHTML = ''; $('stepper').appendChild(wrap);
+  update();
+}
+
+$('startCam').onclick = async () => {
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: 'environment' } } });
+    $('video').srcObject = stream;
+    status('Camera ready.');
+  } catch (e) { status('Camera failed: ' + e.message, true); }
+};
+$('captureBtn').onclick = async () => {
+  const v = $('video');
+  if (!v.srcObject) { status('Start the camera first.'); return; }
+  const canvas = document.createElement('canvas');
+  canvas.width = v.videoWidth || 640; canvas.height = v.videoHeight || 480;
+  canvas.getContext('2d').drawImage(v, 0, 0, canvas.width, canvas.height);
+  const image = canvas.toDataURL('image/jpeg', 0.92);
+  status('Detecting ' + active + ' face...');
+  try {
+    const res = await fetch('/api/detect', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ image }) });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'detection failed');
+    faces[active] = data.colors.split('');
+    renderAll(); renderDetected(data);
+    status(`Face ${active}: ${data.string} (${data.method}). Click squares to fix any error.`);
+  } catch (e) { status('Detection failed: ' + e.message, true); }
+};
+$('loadScramble').onclick = async () => {
+  try {
+    const res = await fetch('/api/scramble', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ text: $('scrambleText').value }) });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'bad scramble');
+    ORDER.forEach((f, i) => { faces[f] = data.state.slice(i*9, i*9+9).split(''); });
+    renderAll(); status('Loaded scramble: ' + data.notation);
+  } catch (e) { status('Scramble failed: ' + e.message, true); }
+};
+$('solveBtn').onclick = async () => {
+  if (timer) { clearInterval(timer); timer = null; }
+  solution = null; step = 0; renderSolution();
+  const state = ORDER.map(f => faces[f].join('')).join('');
+  $('status').textContent = 'Solving...';
+  try {
+    const res = await fetch('/api/solve', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ state, engine: $('engine').value }) });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'solve failed');
+    solution = data;
+    renderSolution();
+    status('Solved with ' + data.engine + '. Use prev/next/play and turn your cube to match.');
+  } catch (e) { status('Solve failed: ' + e.message, true); }
+};
+
+renderTabs(); renderAll(); renderCubeFaces(ORDER.map(f => f.repeat(9)).join(''));
+</script>
+</body>
+</html>

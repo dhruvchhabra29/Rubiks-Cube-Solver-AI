@@ -21,9 +21,12 @@ Staged experiment (each stage is committed and pushed)
 2. Dataset: add a larger reproducible dataset, retrain, benchmark again.
 3. Final report: compare real measured numbers (REPORT.md).
 
-Setup
------
-    python3 -m pip install --user numpy      # only dependency
+Setup (isolated venv — system Python is untouched)
+---------------------------------------------------
+    python3 -m venv .venv
+    .venv/bin/python -m pip install -r requirements.txt
+
+Use `.venv/bin/python` for every command below.
 
 Files
 -----
