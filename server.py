@@ -1,7 +1,7 @@
 """Flask server for the visual cube solver GUI.
 
 Run:  python3 server.py
-Then open http://localhost:5000
+Then open http://127.0.0.1:8000
 """
 import os
 
@@ -17,6 +17,11 @@ WEB = os.path.join(os.path.dirname(os.path.abspath(__file__)), "web")
 @app.route("/")
 def index():
     return send_from_directory(WEB, "index.html")
+
+
+@app.route("/vendor/<path:filename>")
+def vendor(filename):
+    return send_from_directory(os.path.join(WEB, "vendor"), filename)
 
 
 @app.route("/api/health")

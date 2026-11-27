@@ -125,7 +125,9 @@ def solve_state(state, engine="auto", model_path=None, ml_steps=30):
     for move in moves:
         state = apply_move(state, move)
         states.append(state.tolist())
-    assert is_solved(state), "solver returned an invalid solution"
+    if not is_solved(state):
+        raise RuntimeError("solver could not verify the solution — check sticker "
+                           "order/orientation (use the GUI's face diagrams)")
     return {
         "engine": used,
         "moves": [int(m) for m in moves],

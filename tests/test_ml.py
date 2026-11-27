@@ -102,6 +102,21 @@ def test_live_demo_always_solves():
           f"{used}, {count} moves")
 
 
+def test_invalid_states_rejected_cleanly():
+    rng = np.random.default_rng(99)
+    accepted = 0
+    for _ in range(50):
+        state = np.repeat(np.arange(6), 9)
+        rng.shuffle(state)
+        try:
+            solve_state(state, engine="auto")
+            accepted += 1
+        except (ValueError, RuntimeError):
+            pass
+    check("impossible cubes rejected with clear errors, never 500s", accepted == 0,
+          f"{accepted}/50 accepted")
+
+
 def test_long_model_beats_old():
     with open(os.path.join(BENCHMARKS, "long.json")) as f:
         data = json.load(f)
@@ -118,6 +133,7 @@ def main():
     test_choose_move_rejects_revisits()
     test_general_solver_correctness()
     test_live_demo_always_solves()
+    test_invalid_states_rejected_cleanly()
     test_long_model_beats_old()
     print("ALL ML EVALUATION TESTS PASSED")
 

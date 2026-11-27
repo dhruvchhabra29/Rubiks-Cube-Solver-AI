@@ -37,6 +37,10 @@
   .faces-view .cell { width:30px; height:30px; border-radius:4px; display:inline-block; margin:1px; color:#111; font-weight:700; text-align:center; line-height:30px; }
   .faces-view .face { text-align:center; }
   .faces-view .face > b { display:block; margin-bottom:4px; color:var(--muted); }
+  #cube3d { width:100%; height:310px; border-radius:9px; cursor:grab;
+            background:radial-gradient(circle at 50% 40%,#202a3a,#10141d 70%); }
+  #cube3d:active { cursor:grabbing; }
+  #cube3d canvas { display:block; }
   .status { color:var(--muted); min-height:18px; font-size:12px; }
   .err { color:#ff8a8a; }
   input[type=range] { width:100%; }
@@ -84,18 +88,94 @@
     <button class="primary" id="solveBtn">SOLVE</button>
     <div id="result"></div>
     <div id="stepper"></div>
-    <div class="faces-view" id="cubeFaces"></div>
+    <div id="cube3d"></div>
+    <p class="hint">Drag the cube to rotate it. The view updates on every step — turn your real cube to match.</p>
     <div class="status" id="status"></div>
   </section>
 </main>
 
-<script>
+<script type="module">
+import * as THREE from './vendor/three.module.js';
+
 const ORDER = ['U','R','F','D','L','B'];
 const COLORS = { U:'#f4f4ee', R:'#d62828', F:'#2a9d4b', D:'#f2c31d', L:'#f28c28', B:'#1d5fd0' };
 let faces = Object.fromEntries(ORDER.map(f => [f, Array(9).fill(f)]));
 let active = 'U', solution = null, step = 0, timer = null;
 const $ = id => document.getElementById(id);
 const status = msg => { $('status').textContent = msg; };
+
+// ---- 3D cube (Three.js, vendored locally) ----
+const FACE_BASIS = {
+  U: { n:[0,1,0],  u:[1,0,0],  v:[0,0,-1] },
+  R: { n:[1,0,0],  u:[0,0,-1], v:[0,1,0]  },
+  F: { n:[0,0,1],  u:[1,0,0],  v:[0,1,0]  },
+  D: { n:[0,-1,0], u:[1,0,0],  v:[0,0,1]  },
+  L: { n:[-1,0,0], u:[0,0,1],  v:[0,1,0]  },
+  B: { n:[0,0,-1], u:[-1,0,0], v:[0,1,0]  },
+};
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 100);
+camera.position.set(5.2, 4.2, 6.2);
+camera.lookAt(0, 0, 0);
+const renderer3d = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+renderer3d.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+$('cube3d').appendChild(renderer3d.domElement);
+const cubeGroup = new THREE.Group();
+scene.add(cubeGroup);
+scene.add(new THREE.AmbientLight(0xffffff, 0.85));
+const sun = new THREE.DirectionalLight(0xffffff, 0.7);
+sun.position.set(4, 6, 5);
+scene.add(sun);
+cubeGroup.add(new THREE.Mesh(new THREE.BoxGeometry(3.02, 3.02, 3.02),
+  new THREE.MeshLambertMaterial({ color: 0x0d0d0d })));
+const stickers = [];
+for (let fi = 0; fi < 6; fi++) {
+  const { n, u, v } = FACE_BASIS[ORDER[fi]];
+  for (let r = 0; r < 3; r++) for (let c = 0; c < 3; c++) {
+    const pos = [0, 1, 2].map(i => n[i] + u[i] * (c - 1) + v[i] * (1 - r));
+    const normal = new THREE.Vector3(...n);
+    const mesh = new THREE.Mesh(new THREE.PlaneGeometry(0.88, 0.88),
+      new THREE.MeshBasicMaterial({ color: 0xffffff }));
+    mesh.position.set(pos[0] + normal.x * 0.515,
+                      pos[1] + normal.y * 0.515,
+                      pos[2] + normal.z * 0.515);
+    mesh.quaternion.setFromUnitVectors(new THREE.Vector3(0, 0, 1), normal);
+    cubeGroup.add(mesh);
+    stickers.push(mesh);
+  }
+}
+cubeGroup.rotation.set(-0.35, 0.55, 0.02);
+function resize3d() {
+  const w = $('cube3d').clientWidth, h = $('cube3d').clientHeight;
+  if (!w || !h) return;
+  renderer3d.setSize(w, h, false);
+  camera.aspect = w / h;
+  camera.updateProjectionMatrix();
+}
+window.addEventListener('resize', resize3d);
+resize3d();
+renderer3d.setAnimationLoop(() => renderer3d.render(scene, camera));
+let dragging = false, lastX = 0, lastY = 0;
+$('cube3d').addEventListener('pointerdown', e => {
+  dragging = true; lastX = e.clientX; lastY = e.clientY;
+  $('cube3d').setPointerCapture(e.pointerId);
+});
+$('cube3d').addEventListener('pointermove', e => {
+  if (!dragging) return;
+  cubeGroup.rotation.y += (e.clientX - lastX) * 0.01;
+  cubeGroup.rotation.x += (e.clientY - lastY) * 0.01;
+  lastX = e.clientX; lastY = e.clientY;
+});
+$('cube3d').addEventListener('pointerup', () => { dragging = false; });
+$('cube3d').addEventListener('wheel', e => {
+  e.preventDefault();
+  camera.position.multiplyScalar(e.deltaY > 0 ? 1.08 : 0.92);
+}, { passive: false });
+function renderCube3D(stateStr) {
+  for (let i = 0; i < stickers.length; i++) {
+    stickers[i].material.color.set(COLORS[stateStr[i]] || '#888888');
+  }
+}
 
 function faceButton(letter, onClick, size=20) {
   const b = document.createElement('button');
@@ -160,22 +240,7 @@ function renderDetected(data) {
   $('detected').appendChild(wrap);
 }
 function renderCubeFaces(stateStr) {
-  $('cubeFaces').innerHTML = '';
-  ORDER.forEach((f, fi) => {
-    const box = document.createElement('div'); box.className = 'face';
-    const label = document.createElement('b'); label.textContent = f;
-    box.appendChild(label);
-    for (let r = 0; r < 3; r++) for (let c = 0; c < 3; c++) {
-      const idx = fi * 9 + r * 3 + c;
-      const letter = stateStr[idx];
-      const cell = document.createElement('div');
-      cell.className = 'cell'; cell.textContent = letter;
-      cell.style.background = COLORS[letter];
-      box.appendChild(cell);
-      if (c === 2) box.appendChild(document.createElement('br'));
-    }
-    $('cubeFaces').appendChild(box);
-  });
+  renderCube3D(stateStr);
 }
 function renderSolution() {
   if (!solution) { $('result').innerHTML = ''; $('stepper').innerHTML = ''; return; }

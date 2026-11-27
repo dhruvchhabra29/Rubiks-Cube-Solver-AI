@@ -33,7 +33,11 @@ def synthetic_face(letter="F"):
 
 def main():
     r = client.get("/")
-    check("GUI serves HTML", r.status_code == 200 and b"solveBtn" in r.data)
+    check("GUI serves HTML", r.status_code == 200 and b"solveBtn" in r.data
+          and b"cube3d" in r.data)
+    r = client.get("/vendor/three.module.js")
+    check("Three.js is vendored and served locally", r.status_code == 200
+          and b"REVISION" in r.data)
     r = client.get("/api/health")
     check("health endpoint", r.get_json()["ok"])
 

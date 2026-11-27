@@ -39,8 +39,10 @@ Visual GUI (camera -> detect -> solve -> follow steps)
 
 Capture each of the six faces with the webcam. The GUI detects the 3x3 grid,
 shows it, and lets you click any square to fix a misread color. Press SOLVE and
-use prev/next/play to follow the moves on the cube in your hand. The engine
-tries the fast ML model first and falls back to Kociemba when it stalls.
+use prev/next/play to follow the moves on the cube in your hand. A Three.js
+3D cube in the solve panel updates on every step — drag to rotate it, scroll
+to zoom. The engine tries the fast ML model first and falls back to Kociemba
+when it stalls.
 
 From another device, run `.venv/bin/python server.py --host 0.0.0.0` and open
 `http://<this-mac-ip>:8000` (accept the macOS firewall prompt). Port 8000 is
@@ -109,7 +111,7 @@ Files
     solve.py / live.py / enter.py   greedy solver and live demos
     engine.py              ML fast path + Kociemba fallback
     vision.py              OpenCV face detection + Lab color matching
-    server.py / web/       Flask backend and camera GUI
+    server.py / web/       Flask backend, 3D Three.js GUI (vendor/ included)
     tests/test_gui.py      HTTP endpoint tests
     tests/test_ml.py       ML eval + loop-safety tests
     verify.py              one-command verification
@@ -132,6 +134,37 @@ Staged history (each pushed separately)
 8. Stronger 300k-sample model, head-to-head benchmark, report update.
 9. Port fix: GUI moved from 5000 to 8000.
 10. ML evals: state-cycle guard fixes greedy loops; benchmarks regenerated.
+
+References and data provenance
+------------------------------
+All training data in `data/` is synthetic, generated locally by `cube.py`,
+`make_dataset.py` and `make_long_dataset.py`. No external dataset was
+downloaded or trained on, so no third-party dataset is claimed as the source
+of our weights. The links below are the real, original sources behind the
+algorithms and public datasets relevant to this project:
+
+- Herbert Kociemba, RubiksCube-TwophaseSolver —
+  https://github.com/hkociemba/RubiksCube-TwophaseSolver (author's page:
+  https://kociemba.org/download). Source of the two-phase algorithm used by
+  the `kociemba` Python package for the general-solver fallback.
+- Agostinelli et al., "Solving the Rubik's cube with deep reinforcement
+  learning and search", Nature Machine Intelligence 1, 356–363 (2019),
+  https://doi.org/10.1038/s42256-019-0070-z — DeepCubeA; the reference ML
+  approach for learning cube solving. Its data/code capsule:
+  https://doi.org/10.24433/CO.4958495.v1. Not used in our training.
+- Kaggle, "Rubik's cube CFOP solutions" —
+  https://www.kaggle.com/datasets/antbob/rubiks-cube-cfop-solutions/data
+  (generator: https://github.com/antbob/qub3rt). 110k CFOP solution
+  sequences; referenced for solution-format ideas only.
+- Kaggle, "Rubik's cube scrambles dataset" —
+  https://www.kaggle.com/datasets/scararrocha/rubiks-cube-scrambles-dataset
+  — 20k scrambles generated with the official WCA scrambling program;
+  referenced for scramble-format conventions only.
+- Kaggle, "Rubiks-Cube" — https://www.kaggle.com/datasets/avinashsmanu/rubiks-cube
+  — photos of solved and scrambled cubes, relevant to the camera/vision
+  portion; not used for training.
+- Three.js (MIT license) — https://threejs.org/ — vendored locally in
+  `web/vendor/` for the 3D cube renderer.
 
 Scope / honest limits
 ---------------------
