@@ -54,5 +54,11 @@ def scramble():
 
 
 if __name__ == "__main__":
-    print("Open http://localhost:5000")
-    app.run(host="127.0.0.1", port=5000, debug=False)
+    import argparse
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--host", default="127.0.0.1",
+                    help="use 0.0.0.0 to allow access from other devices")
+    ap.add_argument("--port", type=int, default=8000)
+    args = ap.parse_args()
+    print(f"Open http://{args.host if args.host != '0.0.0.0' else '127.0.0.1'}:{args.port}")
+    app.run(host=args.host, port=args.port, debug=False)

@@ -78,7 +78,11 @@ D from below with F at the top, B from behind). Use letters, not colors.
 Visual GUI (camera -> detect -> solve -> follow steps)
 ------------------------------------------------------
     .venv/bin/python server.py
-    # open http://localhost:5000 and allow camera access
+    # open http://127.0.0.1:8000 and allow camera access
+
+Port 8000 is used because macOS Control Center occupies 5000, which makes
+`localhost:5000` return a 403 from the wrong service. From another device,
+run `.venv/bin/python server.py --host 0.0.0.0` and open `http://<this-mac-ip>:8000`.
 
 Capture each of the six faces with the webcam; the GUI detects the 3x3 grid,
 shows it, and lets you click any square to fix a misread sticker. Press SOLVE
