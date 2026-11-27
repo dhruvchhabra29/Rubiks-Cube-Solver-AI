@@ -79,7 +79,7 @@ Reproduce the experiments
         --new models/model_long.npz --out benchmarks/long.json
     .venv/bin/python make_report.py                # regenerates REPORT.md
 
-Verification (for a teacher demo)
+Verification 
 ---------------------------------
     .venv/bin/python verify.py
     .venv/bin/python tests/test_gui.py
