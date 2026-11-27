@@ -54,6 +54,10 @@ Terminal solve (no browser)
     .venv/bin/python live.py --scramble "R U R' F2" --step # pause each move
     .venv/bin/python enter.py                              # guided physical-cube entry
 
+`live.py` and `enter.py` try the trained model first and hand off to Kociemba
+if it stalls, so a demo always ends with a solved cube and reports which engine
+finished it (`engine: ml` or `engine: kociemba`).
+
 For `--faces`, type 54 letters in face order U,R,F,D,L,B, 9 each, row-major as
 seen looking straight at the face (U from above with B at the top of the view,
 D from below with F at the top, B from behind). Letters are positions/colors,

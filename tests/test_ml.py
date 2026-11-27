@@ -12,6 +12,7 @@ import numpy as np
 
 from cube import apply_move, is_solved, scramble
 from engine import solve_state
+from live import live_solve_with_fallback
 from neuralnet import MLP
 from solve import choose_move, solve
 
@@ -88,6 +89,19 @@ def test_general_solver_correctness():
     check("auto engine solves 15 random 25-move scrambles", failures == 0)
 
 
+def test_live_demo_always_solves():
+    import contextlib
+    import io
+    net = MLP.load(os.path.join(MODELS, "model_long.npz"))
+    state, _ = scramble(np.random.default_rng(44), 25)
+    with contextlib.redirect_stdout(io.StringIO()):
+        solved, count, final, used = live_solve_with_fallback(
+            net, state, step=False, max_steps=30)
+    check("live demo falls back and finishes a hard cube",
+          solved and is_solved(final) and used in ("ml", "kociemba"),
+          f"{used}, {count} moves")
+
+
 def test_long_model_beats_old():
     with open(os.path.join(BENCHMARKS, "long.json")) as f:
         data = json.load(f)
@@ -103,6 +117,7 @@ def main():
     test_short_scramble_quality()
     test_choose_move_rejects_revisits()
     test_general_solver_correctness()
+    test_live_demo_always_solves()
     test_long_model_beats_old()
     print("ALL ML EVALUATION TESTS PASSED")
 

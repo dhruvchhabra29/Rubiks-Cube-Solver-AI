@@ -116,7 +116,9 @@ def main():
                  "cube in about 20 moves. The GUI shows every intermediate state so "
                  "you can follow the moves on a real cube.")
     lines.append("- The camera flow detects each face's 3x3 grid with OpenCV and Lab "
-                 "color matching; every sticker can be corrected by clicking before solving.\n")
+                 "color matching; every sticker can be corrected by clicking before solving.")
+    lines.append("- Terminal demos (`live.py`, `enter.py`) use the same handoff, so they "
+                 "always finish with a solved cube and report the engine used.\n")
 
     lines.append("## Honest limitations\n")
     lines.append("- The neural network alone is not a general solver. Correctness on "

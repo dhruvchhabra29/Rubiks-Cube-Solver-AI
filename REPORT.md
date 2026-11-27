@@ -59,6 +59,7 @@ All numbers below are read directly from the JSON files in `benchmarks/` (`basic
 
 - The app uses the ML model as a fast path. If greedy ML stalls, it falls back to Kociemba's two-phase solver, which solves any valid cube in about 20 moves. The GUI shows every intermediate state so you can follow the moves on a real cube.
 - The camera flow detects each face's 3x3 grid with OpenCV and Lab color matching; every sticker can be corrected by clicking before solving.
+- Terminal demos (`live.py`, `enter.py`) use the same handoff, so they always finish with a solved cube and report the engine used.
 
 ## Honest limitations
 

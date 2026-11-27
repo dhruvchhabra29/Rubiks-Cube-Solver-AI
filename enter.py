@@ -14,7 +14,7 @@ import os
 import numpy as np
 
 from cube import FACE_NAMES
-from live import LETTERS, live_solve, show
+from live import LETTERS, live_solve_with_fallback, show
 from neuralnet import MLP
 
 HELP = {
@@ -79,10 +79,9 @@ def main():
     net = MLP.load(args.model)
     state = np.array([LETTERS.index(c) for c in text], dtype=np.int8)
     print("\nSolving...")
-    solved, count, final = live_solve(net, state, step=args.step)
-    print("\nRESULT:", "SOLVED in " + str(count) + " moves" if solved else
-          "NOT SOLVED within 30 moves — this model only learned short scrambles. "
-          "Scramble your cube 3-5 moves from solved and try again.")
+    solved, count, final, used = live_solve_with_fallback(net, state, step=args.step)
+    label = {True: "SOLVED", False: "NOT SOLVED"}[solved]
+    print(f"\nRESULT: {label} in {count} moves (engine: {used})")
     if solved:
         show(final)
 

@@ -76,6 +76,23 @@ def live_solve(net, state, step=False, max_steps=30):
     return is_solved(state), max_steps, state
 
 
+def live_solve_with_fallback(net, state, step=False, max_steps=30):
+    """Try the learned model, then hand off to the general solver if it stalls."""
+    solved, count, current = live_solve(net, state, step, max_steps)
+    if solved:
+        return True, count, current, "ml"
+
+    print("\n  ML stalled on this cube — switching to the general solver (Kociemba).")
+    from engine import solve_state
+    result = solve_state(current, engine="kociemba")
+    for i, move in enumerate(result["moves"], start=1):
+        print(f"  solver step {count + i}: {move_name(move):>3}")
+        if step:
+            input("       [press Enter for next move]")
+    final = np.array(result["states"][-1], dtype=np.int8)
+    return is_solved(final), count + len(result["moves"]), final, "kociemba"
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--model", default=os.path.join(os.path.dirname(__file__),
@@ -101,9 +118,9 @@ def main():
 
     show(state)
     print("\nSolving...")
-    solved, count, final = live_solve(net, state, step=args.step)
-    print("\nRESULT:", "SOLVED in " + str(count) + " moves" if solved else
-          "NOT SOLVED within 30 moves (model is greedy — try a shorter scramble)")
+    solved, count, final, used = live_solve_with_fallback(net, state, step=args.step)
+    label = {True: "SOLVED", False: "NOT SOLVED"}[solved]
+    print(f"\nRESULT: {label} in {count} moves (engine: {used})")
     if solved:
         show(final)
 
