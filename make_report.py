@@ -116,9 +116,10 @@ def main():
                  "cube in about 20 moves. The GUI shows every intermediate state so "
                  "you can follow the moves on a real cube.")
     lines.append("- The camera flow detects each face's 3x3 grid with OpenCV and Lab "
-                 "color matching; every sticker can be corrected by clicking before solving.")
-    lines.append("- The solution is shown in a local Three.js 3D cube that updates on every "
-                 "step; drag to rotate and scroll to zoom.\n")
+                 "color matching; misread stickers are corrected by clicking them on the 3D cube.")
+    lines.append("- The legacy 2D sticker grids were removed. The solution is shown on a "
+                 "single Three.js 3D cube (three faces visible at the start angle) that "
+                 "updates on every step; drag to rotate, scroll to zoom.\n")
     lines.append("- Terminal demos (`live.py`, `enter.py`) use the same handoff, so they "
                  "always finish with a solved cube and report the engine used.\n")
 

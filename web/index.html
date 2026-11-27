@@ -3,53 +3,45 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Rubik's Cube Solver — Visual GUI</title>
+<title>Rubik's Cube Solver — 3D GUI</title>
 <style>
-  :root { --bg:#0e1117; --panel:#181d26; --line:#2a3240; --text:#e7ecf3; --muted:#93a0b4; --accent:#5b9cff; }
+  :root { --bg:#0b0f16; --panel:#151b25; --line:#283244; --text:#e8eef7; --muted:#94a3b8; --accent:#5b9cff; }
   * { box-sizing:border-box; }
-  body { margin:0; background:var(--bg); color:var(--text); font:14px/1.45 -apple-system,Segoe UI,Roboto,sans-serif; }
-  header { padding:16px 22px; border-bottom:1px solid var(--line); display:flex; gap:18px; align-items:center; flex-wrap:wrap; }
-  h1 { margin:0; font-size:19px; letter-spacing:.3px; }
+  body { margin:0; background:var(--bg); color:var(--text); font:14px/1.5 -apple-system,Segoe UI,Roboto,sans-serif; }
+  header { padding:14px 22px; border-bottom:1px solid var(--line); display:flex; gap:18px; align-items:center; flex-wrap:wrap; }
+  h1 { margin:0; font-size:18px; letter-spacing:.3px; }
   header .sub { color:var(--muted); font-size:12px; }
-  main { display:grid; grid-template-columns:repeat(auto-fit,minmax(330px,1fr)); gap:16px; padding:18px; max-width:1500px; margin:auto; }
-  .panel { background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:16px; }
+  label { display:flex; align-items:center; gap:8px; color:var(--muted); font-size:12px; }
+  main { display:grid; grid-template-columns:350px 1fr; gap:18px; padding:18px; max-width:1500px; margin:auto; align-items:start; }
+  @media (max-width:900px) { main { grid-template-columns:1fr; } }
+  .panel { background:var(--panel); border:1px solid var(--line); border-radius:14px; padding:18px; }
   .panel h2 { margin:0 0 12px; font-size:15px; }
-  button, select, input { font:inherit; color:var(--text); background:#222b38; border:1px solid #364154; border-radius:7px; padding:7px 11px; }
+  button, select, input { font:inherit; color:var(--text); background:#222c3a; border:1px solid #38455a; border-radius:8px; padding:8px 12px; }
   button { cursor:pointer; }
   button:hover { border-color:var(--accent); }
   button.primary { background:#2463c9; border-color:#3b78dd; font-weight:600; }
   button.on { background:#2463c9; border-color:#3b78dd; }
-  video { width:100%; border-radius:9px; background:#000; aspect-ratio:4/3; object-fit:cover; }
+  video { width:100%; border-radius:10px; background:#000; aspect-ratio:4/3; object-fit:cover; }
   .row { display:flex; gap:8px; align-items:center; flex-wrap:wrap; margin:10px 0; }
-  .face-tabs button { width:38px; }
-  .grid { display:grid; grid-template-columns:repeat(3,1fr); gap:4px; width:112px; }
-  .grid button { aspect-ratio:1; padding:0; font-weight:700; border-radius:4px; color:#111; text-shadow:0 1px 0 rgba(255,255,255,.35); }
-  .face-block { display:flex; align-items:center; gap:12px; margin:10px 0; }
-  .face-block > b { width:18px; }
-  .manual-wrap { display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:8px; }
-  .manual-wrap .face-block { flex-direction:column; align-items:flex-start; margin:0; }
-  .preview { width:190px; border-radius:8px; border:1px solid var(--line); }
+  .face-tabs button { width:36px; text-align:center; padding:7px 0; }
   .hint { color:var(--muted); font-size:12px; }
-  #stateString { font-family:ui-monospace,Menlo,monospace; font-size:11px; word-break:break-all; color:var(--muted); margin:8px 0; }
+  .divider { height:1px; background:var(--line); margin:16px 0; }
+  .preview { width:100%; border-radius:10px; border:1px solid var(--line); margin-top:10px; }
+  #stateString { font-family:ui-monospace,Menlo,monospace; font-size:11px; word-break:break-all; color:var(--muted); margin:6px 0 12px; }
   .badge { display:inline-block; padding:3px 9px; border-radius:20px; background:#1e3a5f; color:#9fc6ff; font-size:12px; }
   .moves { font-family:ui-monospace,Menlo,monospace; word-break:break-all; margin:8px 0 14px; color:#cfe0ff; }
-  .faces-view { display:grid; grid-template-columns:repeat(3,auto); gap:14px; margin-top:14px; }
-  .faces-view .cell { width:30px; height:30px; border-radius:4px; display:inline-block; margin:1px; color:#111; font-weight:700; text-align:center; line-height:30px; }
-  .faces-view .face { text-align:center; }
-  .faces-view .face > b { display:block; margin-bottom:4px; color:var(--muted); }
-  #cube3d { width:100%; height:310px; border-radius:9px; cursor:grab;
-            background:radial-gradient(circle at 50% 40%,#202a3a,#10141d 70%); }
+  #cube3d { width:100%; height:min(64vh,620px); min-height:420px; border-radius:12px; cursor:grab;
+            background:radial-gradient(circle at 50% 38%,#233049,#0c111b 72%); overflow:hidden; }
   #cube3d:active { cursor:grabbing; }
-  #cube3d canvas { display:block; }
-  .status { color:var(--muted); min-height:18px; font-size:12px; }
-  .err { color:#ff8a8a; }
+  #cube3d canvas { display:block; width:100% !important; height:100% !important; }
+  .status { color:var(--muted); min-height:18px; font-size:12px; margin-top:8px; }
   input[type=range] { width:100%; }
 </style>
 </head>
 <body>
 <header>
   <h1>Rubik's Cube Solver</h1>
-  <span class="sub">Camera → detect 6 faces → solve → follow each move on a real cube</span>
+  <span class="sub">Capture or edit the cube → solve → follow each step in 3D</span>
   <label>Engine
     <select id="engine">
       <option value="auto">Auto (fast ML, fallback solver)</option>
@@ -61,35 +53,37 @@
 
 <main>
   <section class="panel">
-    <h2>1. Capture your cube</h2>
+    <h2>1. Set up the cube</h2>
     <video id="video" autoplay playsinline></video>
     <div class="row">
       <button id="startCam">Start camera</button>
       <div class="face-tabs" id="tabs"></div>
-      <button class="primary" id="captureBtn">Capture face</button>
+      <button class="primary" id="captureBtn">Capture</button>
     </div>
+    <p class="hint">Pick a face tab, hold that face flat in frame, capture it. Repeat for all six.</p>
     <div id="detected"></div>
-    <p class="hint">Hold each face flat and fill the frame. Click any square below to correct a misread sticker.</p>
-  </section>
 
-  <section class="panel">
-    <h2>Or enter stickers manually</h2>
+    <div class="divider"></div>
+
     <div class="row">
-      <input id="scrambleText" placeholder="R U R' F2 (optional)" size="24">
+      <input id="scrambleText" placeholder="R U R' F2" size="18">
       <button id="loadScramble">Load scramble</button>
     </div>
-    <div class="manual-wrap" id="manual"></div>
-    <p class="hint">Start from solved and edit squares, or load a scramble. Letter = color: U white, R red, F green, D yellow, L orange, B blue.</p>
+    <p class="hint">Or click a sticker on the 3D cube to cycle its color. Letter = color:
+      U white, R red, F green, D yellow, L orange, B blue.</p>
   </section>
 
   <section class="panel">
     <h2>2. Solve &amp; follow the steps</h2>
     <div id="stateString"></div>
-    <button class="primary" id="solveBtn">SOLVE</button>
+    <div class="row">
+      <button class="primary" id="solveBtn">SOLVE</button>
+      <button id="resetView">Reset view</button>
+    </div>
     <div id="result"></div>
     <div id="stepper"></div>
     <div id="cube3d"></div>
-    <p class="hint">Drag the cube to rotate it. The view updates on every step — turn your real cube to match.</p>
+    <p class="hint">Drag to rotate, scroll to zoom. The cube updates on every step — turn your real cube to match.</p>
     <div class="status" id="status"></div>
   </section>
 </main>
@@ -99,12 +93,6 @@ import * as THREE from './vendor/three.module.js';
 
 const ORDER = ['U','R','F','D','L','B'];
 const COLORS = { U:'#f4f4ee', R:'#d62828', F:'#2a9d4b', D:'#f2c31d', L:'#f28c28', B:'#1d5fd0' };
-let faces = Object.fromEntries(ORDER.map(f => [f, Array(9).fill(f)]));
-let active = 'U', solution = null, step = 0, timer = null;
-const $ = id => document.getElementById(id);
-const status = msg => { $('status').textContent = msg; };
-
-// ---- 3D cube (Three.js, vendored locally) ----
 const FACE_BASIS = {
   U: { n:[0,1,0],  u:[1,0,0],  v:[0,0,-1] },
   R: { n:[1,0,0],  u:[0,0,-1], v:[0,1,0]  },
@@ -113,102 +101,105 @@ const FACE_BASIS = {
   L: { n:[-1,0,0], u:[0,0,1],  v:[0,1,0]  },
   B: { n:[0,0,-1], u:[-1,0,0], v:[0,1,0]  },
 };
+let stateLetters = ORDER.flatMap(f => Array(9).fill(f));
+let active = 'U', solution = null, step = 0, timer = null;
+const $ = id => document.getElementById(id);
+const status = msg => { $('status').textContent = msg; };
+
+// ---- Three.js cube ----
 const scene = new THREE.Scene();
-const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 100);
-camera.position.set(5.2, 4.2, 6.2);
+const camera = new THREE.PerspectiveCamera(42, 1, 0.1, 100);
+const HOME_POS = new THREE.Vector3(4.6, 3.6, 5.6);
+camera.position.copy(HOME_POS);
 camera.lookAt(0, 0, 0);
 const renderer3d = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-renderer3d.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer3d.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
 $('cube3d').appendChild(renderer3d.domElement);
 const cubeGroup = new THREE.Group();
 scene.add(cubeGroup);
-scene.add(new THREE.AmbientLight(0xffffff, 0.85));
-const sun = new THREE.DirectionalLight(0xffffff, 0.7);
+scene.add(new THREE.AmbientLight(0xffffff, 0.9));
+const sun = new THREE.DirectionalLight(0xffffff, 0.8);
 sun.position.set(4, 6, 5);
 scene.add(sun);
 cubeGroup.add(new THREE.Mesh(new THREE.BoxGeometry(3.02, 3.02, 3.02),
-  new THREE.MeshLambertMaterial({ color: 0x0d0d0d })));
+  new THREE.MeshLambertMaterial({ color: 0x0b0b0b })));
 const stickers = [];
 for (let fi = 0; fi < 6; fi++) {
   const { n, u, v } = FACE_BASIS[ORDER[fi]];
   for (let r = 0; r < 3; r++) for (let c = 0; c < 3; c++) {
-    const pos = [0, 1, 2].map(i => n[i] + u[i] * (c - 1) + v[i] * (1 - r));
+    const pos = [0,1,2].map(i => n[i] + u[i]*(c-1) + v[i]*(1-r));
     const normal = new THREE.Vector3(...n);
-    const mesh = new THREE.Mesh(new THREE.PlaneGeometry(0.88, 0.88),
+    const mesh = new THREE.Mesh(new THREE.PlaneGeometry(0.9, 0.9),
       new THREE.MeshBasicMaterial({ color: 0xffffff }));
-    mesh.position.set(pos[0] + normal.x * 0.515,
-                      pos[1] + normal.y * 0.515,
-                      pos[2] + normal.z * 0.515);
-    mesh.quaternion.setFromUnitVectors(new THREE.Vector3(0, 0, 1), normal);
+    mesh.position.set(pos[0] + normal.x*0.515, pos[1] + normal.y*0.515, pos[2] + normal.z*0.515);
+    mesh.quaternion.setFromUnitVectors(new THREE.Vector3(0,0,1), normal);
+    mesh.userData.index = stickers.length;
     cubeGroup.add(mesh);
     stickers.push(mesh);
   }
 }
-cubeGroup.rotation.set(-0.35, 0.55, 0.02);
+function resetView() {
+  cubeGroup.rotation.set(0, 0, 0);
+  camera.position.copy(HOME_POS);
+  camera.lookAt(0,0,0);
+}
+resetView();
+
 function resize3d() {
   const w = $('cube3d').clientWidth, h = $('cube3d').clientHeight;
   if (!w || !h) return;
-  renderer3d.setSize(w, h, false);
+  renderer3d.setSize(w, h);           // CSS size follows the container on Retina
   camera.aspect = w / h;
   camera.updateProjectionMatrix();
 }
 window.addEventListener('resize', resize3d);
 resize3d();
 renderer3d.setAnimationLoop(() => renderer3d.render(scene, camera));
-let dragging = false, lastX = 0, lastY = 0;
+
+function drawState() {
+  for (let i = 0; i < stickers.length; i++) {
+    stickers[i].material.color.set(COLORS[stateLetters[i]] || '#888888');
+  }
+  $('stateString').textContent = 'State: ' + stateLetters.join('');
+}
+drawState();
+
+let dragging = false, lastX = 0, lastY = 0, moved = 0;
 $('cube3d').addEventListener('pointerdown', e => {
-  dragging = true; lastX = e.clientX; lastY = e.clientY;
+  dragging = true; moved = 0; lastX = e.clientX; lastY = e.clientY;
   $('cube3d').setPointerCapture(e.pointerId);
 });
 $('cube3d').addEventListener('pointermove', e => {
   if (!dragging) return;
-  cubeGroup.rotation.y += (e.clientX - lastX) * 0.01;
-  cubeGroup.rotation.x += (e.clientY - lastY) * 0.01;
+  const dx = e.clientX - lastX, dy = e.clientY - lastY;
+  moved += Math.abs(dx) + Math.abs(dy);
+  cubeGroup.rotation.y += dx * 0.01;
+  cubeGroup.rotation.x += dy * 0.01;
   lastX = e.clientX; lastY = e.clientY;
 });
 $('cube3d').addEventListener('pointerup', () => { dragging = false; });
+$('cube3d').addEventListener('click', e => {
+  if (moved > 6) return;
+  const rect = renderer3d.domElement.getBoundingClientRect();
+  const pointer = new THREE.Vector2(
+    ((e.clientX - rect.left) / rect.width) * 2 - 1,
+    -((e.clientY - rect.top) / rect.height) * 2 + 1);
+  const ray = new THREE.Raycaster();
+  ray.setFromCamera(pointer, camera);
+  const hit = ray.intersectObjects(stickers, false)[0];
+  if (!hit) return;
+  const i = hit.object.userData.index;
+  stateLetters[i] = ORDER[(ORDER.indexOf(stateLetters[i]) + 1) % 6];
+  if (solution) { solution = null; step = 0; renderSolution(); }
+  drawState();
+  status(`Sticker ${i + 1} set to ${stateLetters[i]}. Press SOLVE again.`);
+});
 $('cube3d').addEventListener('wheel', e => {
   e.preventDefault();
   camera.position.multiplyScalar(e.deltaY > 0 ? 1.08 : 0.92);
 }, { passive: false });
-function renderCube3D(stateStr) {
-  for (let i = 0; i < stickers.length; i++) {
-    stickers[i].material.color.set(COLORS[stateStr[i]] || '#888888');
-  }
-}
+$('resetView').onclick = () => { resetView(); status('View reset.'); };
 
-function faceButton(letter, onClick, size=20) {
-  const b = document.createElement('button');
-  b.textContent = letter;
-  b.style.background = COLORS[letter];
-  b.style.width = b.style.height = size + 'px';
-  b.onclick = onClick;
-  return b;
-}
-function gridFor(face, onClick) {
-  const g = document.createElement('div');
-  g.className = 'grid';
-  faces[face].forEach((letter, i) => g.appendChild(faceButton(letter, () => onClick(face, i))));
-  return g;
-}
-function cycle(face, i, dir=1) {
-  const j = ORDER.indexOf(faces[face][i]);
-  faces[face][i] = ORDER[(j + dir + 6) % 6];
-  renderAll();
-}
-function renderAll() {
-  $('manual').innerHTML = '';
-  ORDER.forEach(f => {
-    const block = document.createElement('div');
-    block.className = 'face-block';
-    const label = document.createElement('b'); label.textContent = f;
-    block.appendChild(label);
-    block.appendChild(gridFor(f, (face, i) => cycle(face, i)));
-    $('manual').appendChild(block);
-  });
-  const str = ORDER.map(f => faces[f].join('')).join('');
-  $('stateString').textContent = 'State: ' + str;
-}
 function renderTabs() {
   $('tabs').innerHTML = '';
   ORDER.forEach(f => {
@@ -219,29 +210,48 @@ function renderTabs() {
     $('tabs').appendChild(b);
   });
 }
-function renderDetected(data) {
-  const wrap = document.createElement('div');
-  wrap.className = 'face-block';
-  const img = document.createElement('img');
-  img.className = 'preview'; img.src = data.preview;
-  const g = document.createElement('div');
-  g.className = 'grid';
-  data.colors.split('').forEach((letter, i) => {
-    g.appendChild(faceButton(letter, () => {
-      faces[active][i] = letter;
-      cycle(active, i);
-    }, 26));
-  });
-  wrap.appendChild(img); wrap.appendChild(g);
-  const info = document.createElement('div');
-  info.innerHTML = `<span class="badge">${active} detected</span><br><span class="hint">${data.method}, ${data.low_confidence.length} low-confidence sticker(s)</span>`;
-  wrap.appendChild(info);
-  $('detected').innerHTML = '';
-  $('detected').appendChild(wrap);
-}
-function renderCubeFaces(stateStr) {
-  renderCube3D(stateStr);
-}
+renderTabs();
+
+$('startCam').onclick = async () => {
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: 'environment' } } });
+    $('video').srcObject = stream;
+    status('Camera ready.');
+  } catch (e) { status('Camera failed: ' + e.message); }
+};
+$('captureBtn').onclick = async () => {
+  const v = $('video');
+  if (!v.srcObject) { status('Start the camera first.'); return; }
+  const canvas = document.createElement('canvas');
+  canvas.width = v.videoWidth || 640; canvas.height = v.videoHeight || 480;
+  canvas.getContext('2d').drawImage(v, 0, 0, canvas.width, canvas.height);
+  status('Detecting ' + active + ' face...');
+  try {
+    const res = await fetch('/api/detect', { method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ image: canvas.toDataURL('image/jpeg', 0.92) }) });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'detection failed');
+    data.colors.split('').forEach((letter, i) => { stateLetters[active * 9 + i] = letter; });
+    if (solution) { solution = null; step = 0; renderSolution(); }
+    drawState();
+    $('detected').innerHTML = `<img class="preview" src="${data.preview}">
+      <p class="hint">${active} detected: ${data.string} (${data.method}).
+      Click stickers on the cube to fix any misread square.</p>`;
+    status(`Face ${active} captured.`);
+  } catch (e) { status('Detection failed: ' + e.message); }
+};
+$('loadScramble').onclick = async () => {
+  try {
+    const res = await fetch('/api/scramble', { method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ text: $('scrambleText').value }) });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'bad scramble');
+    stateLetters = data.state.split('');
+    solution = null; step = 0; renderSolution(); drawState();
+    status('Loaded scramble: ' + data.notation);
+  } catch (e) { status('Scramble failed: ' + e.message); }
+};
+
 function renderSolution() {
   if (!solution) { $('result').innerHTML = ''; $('stepper').innerHTML = ''; return; }
   const moves = solution.notation.split(' ').filter(Boolean);
@@ -257,8 +267,9 @@ function renderSolution() {
   const update = () => {
     range.value = step;
     label.textContent = ` step ${step}/${solution.states.length - 1}` +
-      (step > 0 ? `  (${moves[step - 1]})` : '  (start)');
-    renderCubeFaces(solution.states[step].map(i => ORDER[i]).join(''));
+      (step > 0 ? ` (${moves[step - 1]})` : ' (start)');
+    stateLetters = solution.states[step].map(i => ORDER[i]);
+    drawState();
   };
   prev.onclick = () => { step = Math.max(0, step - 1); update(); };
   next.onclick = () => { step = Math.min(solution.states.length - 1, step + 1); update(); };
@@ -267,7 +278,7 @@ function renderSolution() {
     if (timer) { clearInterval(timer); timer = null; play.textContent = '▶ play'; return; }
     play.textContent = '❚❚ pause';
     timer = setInterval(() => {
-      if (step >= solution.states.length - 1) { clearInterval(timer); timer = null; play.textContent='▶ play'; return; }
+      if (step >= solution.states.length - 1) { clearInterval(timer); timer = null; play.textContent = '▶ play'; return; }
       step++; update();
     }, 750);
   };
@@ -278,55 +289,19 @@ function renderSolution() {
   update();
 }
 
-$('startCam').onclick = async () => {
-  try {
-    const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: 'environment' } } });
-    $('video').srcObject = stream;
-    status('Camera ready.');
-  } catch (e) { status('Camera failed: ' + e.message, true); }
-};
-$('captureBtn').onclick = async () => {
-  const v = $('video');
-  if (!v.srcObject) { status('Start the camera first.'); return; }
-  const canvas = document.createElement('canvas');
-  canvas.width = v.videoWidth || 640; canvas.height = v.videoHeight || 480;
-  canvas.getContext('2d').drawImage(v, 0, 0, canvas.width, canvas.height);
-  const image = canvas.toDataURL('image/jpeg', 0.92);
-  status('Detecting ' + active + ' face...');
-  try {
-    const res = await fetch('/api/detect', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ image }) });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.error || 'detection failed');
-    faces[active] = data.colors.split('');
-    renderAll(); renderDetected(data);
-    status(`Face ${active}: ${data.string} (${data.method}). Click squares to fix any error.`);
-  } catch (e) { status('Detection failed: ' + e.message, true); }
-};
-$('loadScramble').onclick = async () => {
-  try {
-    const res = await fetch('/api/scramble', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ text: $('scrambleText').value }) });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.error || 'bad scramble');
-    ORDER.forEach((f, i) => { faces[f] = data.state.slice(i*9, i*9+9).split(''); });
-    renderAll(); status('Loaded scramble: ' + data.notation);
-  } catch (e) { status('Scramble failed: ' + e.message, true); }
-};
 $('solveBtn').onclick = async () => {
   if (timer) { clearInterval(timer); timer = null; }
   solution = null; step = 0; renderSolution();
-  const state = ORDER.map(f => faces[f].join('')).join('');
-  $('status').textContent = 'Solving...';
+  status('Solving...');
   try {
-    const res = await fetch('/api/solve', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ state, engine: $('engine').value }) });
+    const res = await fetch('/api/solve', { method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ state: stateLetters.join(''), engine: $('engine').value }) });
     const data = await res.json();
     if (!res.ok) throw new Error(data.error || 'solve failed');
-    solution = data;
-    renderSolution();
+    solution = data; renderSolution();
     status('Solved with ' + data.engine + '. Use prev/next/play and turn your cube to match.');
-  } catch (e) { status('Solve failed: ' + e.message, true); }
+  } catch (e) { status('Solve failed: ' + e.message); }
 };
-
-renderTabs(); renderAll(); renderCubeFaces(ORDER.map(f => f.repeat(9)).join(''));
 </script>
 </body>
 </html>

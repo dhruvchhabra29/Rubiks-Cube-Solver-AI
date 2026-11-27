@@ -37,12 +37,12 @@ Visual GUI (camera -> detect -> solve -> follow steps)
     .venv/bin/python server.py
     # open http://127.0.0.1:8000 and allow camera access
 
-Capture each of the six faces with the webcam. The GUI detects the 3x3 grid,
-shows it, and lets you click any square to fix a misread color. Press SOLVE and
-use prev/next/play to follow the moves on the cube in your hand. A Three.js
-3D cube in the solve panel updates on every step — drag to rotate it, scroll
-to zoom. The engine tries the fast ML model first and falls back to Kociemba
-when it stalls.
+Capture each of the six faces with the webcam. The page has no legacy 2D
+sticker grids: the cube is a Three.js 3D view with three faces visible at the
+isometric start angle. Click any sticker on the 3D cube to cycle its color,
+drag to rotate, scroll to zoom, and press Reset view to return. Press SOLVE and
+use prev/next/play to follow the moves on the cube in your hand. The engine
+tries the fast ML model first and falls back to Kociemba when it stalls.
 
 From another device, run `.venv/bin/python server.py --host 0.0.0.0` and open
 `http://<this-mac-ip>:8000` (accept the macOS firewall prompt). Port 8000 is

@@ -34,7 +34,9 @@ def synthetic_face(letter="F"):
 def main():
     r = client.get("/")
     check("GUI serves HTML", r.status_code == 200 and b"solveBtn" in r.data
-          and b"cube3d" in r.data)
+          and b"cube3d" in r.data and b"resetView" in r.data)
+    check("legacy 2D grids removed", b'id="manual"' not in r.data
+          and b"faces-view" not in r.data)
     r = client.get("/vendor/three.module.js")
     check("Three.js is vendored and served locally", r.status_code == 200
           and b"REVISION" in r.data)
