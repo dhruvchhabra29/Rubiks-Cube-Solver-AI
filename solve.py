@@ -8,23 +8,45 @@ from cube import (SOLVED, apply_move, is_solved, move_name, one_hot_states, scra
 from neuralnet import MLP
 
 
+def choose_move(probs, state, seen):
+    """Best move that does not return to a state already visited.
+
+    Greedy models can predict the same move forever (F2, F2, ...), which is a
+    state cycle, not progress. Rejecting only revisits preserves useful moves
+    that happen to be on the same face while guaranteeing no infinite loop.
+    Returns (move, confidence) or (None, 0.0) if every candidate is a revisit.
+    """
+    ranked = np.argsort(np.asarray(probs))[::-1]
+    for candidate in ranked:
+        move = int(candidate)
+        key = apply_move(state, move).tobytes()
+        if key not in seen:
+            return move, float(probs[move])
+    return None, 0.0
+
+
 def solve(net, state, max_steps=30):
-    """Greedily apply the network's predicted inverse move until solved."""
+    """Greedily apply the network's predicted move until solved or stuck."""
     moves = []
     state = state.copy()
+    seen = {state.tobytes()}
     for _ in range(max_steps):
         if is_solved(state):
             break
         probs = net.predict_proba(one_hot_states(state[None, :]))[0]
-        move = int(probs.argmax())
+        move, _ = choose_move(probs, state, seen)
+        if move is None:
+            break
         moves.append(move)
         state = apply_move(state, move)
+        seen.add(state.tobytes())
     return moves, state, is_solved(state)
 
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--model", default=os.path.join(os.path.dirname(__file__), "model.npz"))
+    ap.add_argument("--model", default=os.path.join(os.path.dirname(__file__),
+                                                    "models", "model_long.npz"))
     ap.add_argument("--length", type=int, default=5)
     ap.add_argument("--trials", type=int, default=5)
     args = ap.parse_args()
@@ -42,7 +64,6 @@ def main():
 
     print(f"\nSolved {wins}/{args.trials} scrambles of length {args.length}.")
 
-    # A visual demonstration of one full solve.
     state, last = scramble(rng, args.length)
     print(f"\nScramble applied: {move_name(last)} (last move)")
     moves, final, ok = solve(net, state)

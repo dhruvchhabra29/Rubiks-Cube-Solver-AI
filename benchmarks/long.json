@@ -31,20 +31,20 @@
       "avg_moves": 27.9
     },
     "7": {
-      "success_rate": 0.25,
-      "avg_moves": 31.7
+      "success_rate": 0.35,
+      "avg_moves": 29.8
     },
     "8": {
-      "success_rate": 0.2,
-      "avg_moves": 33.5
+      "success_rate": 0.25,
+      "avg_moves": 32.0
     },
     "9": {
       "success_rate": 0.0,
       "avg_moves": 40.0
     },
     "10": {
-      "success_rate": 0.0,
-      "avg_moves": 40.0
+      "success_rate": 0.05,
+      "avg_moves": 38.35
     },
     "11": {
       "success_rate": 0.0,
@@ -105,20 +105,20 @@
       "avg_moves": 5.85
     },
     "5": {
-      "success_rate": 0.75,
-      "avg_moves": 13.95
+      "success_rate": 0.8,
+      "avg_moves": 13.6
     },
     "6": {
-      "success_rate": 0.45,
-      "avg_moves": 24.55
+      "success_rate": 0.55,
+      "avg_moves": 22.85
     },
     "7": {
       "success_rate": 0.5,
       "avg_moves": 23.6
     },
     "8": {
-      "success_rate": 0.3,
-      "avg_moves": 30.15
+      "success_rate": 0.35,
+      "avg_moves": 29.3
     },
     "9": {
       "success_rate": 0.1,

@@ -86,6 +86,10 @@ Verification (for a teacher demo)
 
 `verify.py` checks cube math, live solves, benchmark reproducibility, report
 consistency and git state. `tests/test_gui.py` exercises every HTTP endpoint.
+`tests/test_ml.py` evaluates model quality, state-cycle safety and the general
+solver. The greedy solver rejects moves that revisit an already-seen state, so
+it can no longer loop forever on F2 F2 ...; if all candidates are revisits,
+the app falls back to Kociemba.
 
 Files
 -----
@@ -103,6 +107,7 @@ Files
     vision.py              OpenCV face detection + Lab color matching
     server.py / web/       Flask backend and camera GUI
     tests/test_gui.py      HTTP endpoint tests
+    tests/test_ml.py       ML eval + loop-safety tests
     verify.py              one-command verification
     REPORT.md              measured results and honest limitations
     data/                  generated datasets (.npz)
@@ -122,6 +127,7 @@ Staged history (each pushed separately)
 7. Visual GUI, OpenCV detection and Kociemba fallback; project-local venv.
 8. Stronger 300k-sample model, head-to-head benchmark, report update.
 9. Port fix: GUI moved from 5000 to 8000.
+10. ML evals: state-cycle guard fixes greedy loops; benchmarks regenerated.
 
 Scope / honest limits
 ---------------------

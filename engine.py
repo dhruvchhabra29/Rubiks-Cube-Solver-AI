@@ -13,6 +13,7 @@ import numpy as np
 
 from cube import FACE_NAMES, N_ACTIONS, apply_move, is_solved, one_hot_states
 from neuralnet import MLP
+from solve import choose_move
 
 LETTERS = "URFDLB"
 _SUFFIX = {"": 0, "2": 1, "'": 2, "i": 2}
@@ -69,14 +70,18 @@ def _ml_solve(state, model_path=None, max_steps=30):
     net = _ml_model(model_path)
     state = state.copy()
     moves, conf = [], []
+    seen = {state.tobytes()}
     for _ in range(max_steps):
         if is_solved(state):
             break
         probs = net.predict_proba(one_hot_states(state[None, :]))[0]
-        move = int(probs.argmax())
-        conf.append(round(float(probs[move]), 4))
+        move, confidence = choose_move(probs, state, seen)
+        if move is None:
+            break
+        conf.append(round(confidence, 4))
         moves.append(move)
         state = apply_move(state, move)
+        seen.add(state.tobytes())
     return moves, conf, is_solved(state)
 
 

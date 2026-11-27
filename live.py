@@ -18,6 +18,7 @@ import numpy as np
 from cube import (FACE_NAMES, SOLVED, apply_move, apply_moves, is_solved,
                   move_name, one_hot_states, scramble)
 from neuralnet import MLP
+from solve import choose_move
 
 LETTERS = "URFDLB"
 
@@ -59,13 +60,17 @@ def show(state):
 
 def live_solve(net, state, step=False, max_steps=30):
     state = state.copy()
+    seen = {state.tobytes()}
     for i in range(max_steps):
         if is_solved(state):
             return True, i, state
         probs = net.predict_proba(one_hot_states(state[None, :]))[0]
-        move = int(probs.argmax())
-        print(f"  step {i + 1}: {move_name(move):>3}   confidence {probs[move] * 100:5.1f}%")
+        move, confidence = choose_move(probs, state, seen)
+        if move is None:
+            break
+        print(f"  step {i + 1}: {move_name(move):>3}   confidence {confidence * 100:5.1f}%")
         state = apply_move(state, move)
+        seen.add(state.tobytes())
         if step:
             input("       [press Enter for next move]")
     return is_solved(state), max_steps, state
@@ -74,7 +79,7 @@ def live_solve(net, state, step=False, max_steps=30):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--model", default=os.path.join(os.path.dirname(__file__),
-                                                    "models", "model_dataset.npz"))
+                                                    "models", "model_long.npz"))
     ap.add_argument("--demo", action="store_true")
     ap.add_argument("--scramble", default=None, help='e.g. "R U R\' F2 L2"')
     ap.add_argument("--faces", default=None, help="54 sticker letters U,R,F,D,L,B")
